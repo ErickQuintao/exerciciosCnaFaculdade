@@ -1,0 +1,2 @@
+# exerciciosCnaFaculdade
+exerciciosCnaFaculdade
