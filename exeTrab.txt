@@ -1,0 +1,384 @@
+#include <stdio.h>
+#include <stdlib.h> 
+
+#define maxMalasTotal 45      
+#define maxMalasPassageiro 25  
+
+int main() {
+    // variaveis
+    int numPas,numMal,numMalT = 0,limite_atingido = 0; // flag de controle (0=F, 1=V)
+    int numMalBT = 0,numMalAT = 0;
+    // arrays para armazenar pesos
+    float pesMal[maxMalasTotal],bagA[maxMalasPassageiro],bagB[maxMalasPassageiro];
+    // Acumuladores de peso 
+    float numPesMalT = 0.0f,bagAPesT = 0.0f,bagBPesT = 0.0f;
+    
+    printf("informe o numero de passageiros: \n");
+    if (scanf("%d", &numPas) != 1 || numPas <= 0) {
+        printf("Nenhum passageiro ou entrada invalida. Encerrando o programa.\n");
+        return 0;
+    }
+    // --- leitura ---
+    // loop de Passageiros 
+    for (int i = 0; i < numPas && limite_atingido == 0; i++) {
+        printf("Passageiro %d: informe o numero de malas:\n", i + 1);
+        //scanf retorna 1 ,se for numero inteiro,se não for inteiro retorna 0 e exibe a mensagem
+        if (scanf("%d", &numMal) != 1 || numMal < 0) {
+             printf("Numero de malas invalido. Pulando passageiro.\n");
+             continue;
+        }
+
+        // loop das Malas do passageiro atual
+        for (int j = 0; j < numMal; j++) {
+            // Verifica o limite global antes de armazenar
+            if (numMalT >= maxMalasTotal) {
+                printf("Limite maximo de %d malas atingido. Parando coleta.\n", maxMalasTotal);
+                limite_atingido = 1; // Ativa a flag para parar o loop externo
+                break;              // Sai do loop 'j' (malas)
+            }
+            
+            float pesoMala;
+            printf("  Informe o peso (kg) da mala %d:\n", j + 1);
+            if (scanf("%f", &pesoMala) != 1 || pesoMala <= 0.0f) {
+                printf("Peso invalido. Pulando mala.\n");
+                // continuar o codigo
+                continue;
+            }
+            
+            // Armazena no array total
+            pesMal[numMalT] = pesoMala;
+            numPesMalT += pesoMala;
+            numMalT++; // Incrementa o contador GLOBAL de malas lidas
+        }
+    } // O loop 'i' vai parar na próxima iteração se limite_atingido for 1.
+    
+    if (numMalT == 0) {
+        printf("\nNenhuma mala para distribuir.\n");
+        return 0;
+    }
+    
+    // --- equilibrio do pesos das malas ---
+    
+    for (int i = 0; i < numMalT; i++) {
+        float pesoMalaAtual = pesMal[i];
+        
+        // coloca a mala no bagageiro com o [MENOR] peso atual
+        if (bagAPesT <= bagBPesT) {
+            // tenta colocar no Bagageiro A (se não estiver cheio)
+            if (numMalAT < maxMalasPassageiro) {
+                bagA[numMalAT] = pesoMalaAtual;
+                bagAPesT += pesoMalaAtual;
+                numMalAT++;
+            } else if (numMalBT < maxMalasPassageiro) { 
+                // A está cheio, tenta B
+                bagB[numMalBT] = pesoMalaAtual;
+                bagBPesT += pesoMalaAtual;
+                numMalBT++;
+            } else {
+                 printf("AVISO: Mala %.2f kg nao alocada. Ambos os bagageiros estao cheios.\n", pesoMalaAtual);
+            }
+        } else { // bagBPesT < bagAPesT
+            // tenta colocar no Bagageiro B (se não estiver cheio)
+            if (numMalBT < maxMalasPassageiro) {
+                bagB[numMalBT] = pesoMalaAtual;
+                bagBPesT += pesoMalaAtual;
+                numMalBT++;
+            } else if (numMalAT < maxMalasPassageiro) { 
+                // B está cheio, tenta A
+                bagA[numMalAT] = pesoMalaAtual;
+                bagAPesT += pesoMalaAtual;
+                numMalAT++;
+            } else {
+                 printf("AVISO: Mala %.2f kg nao alocada. Ambos os bagageiros estao cheios.\n", pesoMalaAtual);
+            }
+        }
+    }
+
+    // --- exibição ---
+    
+    printf("\nnumero total das malas: %d\n", numMalT);
+    printf("numero peso total das malas: %.2f kg \n", numPesMalT);
+    
+    printf("\n----Bagageiro A----\n");
+    printf("numero total das malas Bag A: %d \n", numMalAT);
+    printf("numero peso total das malas Bag A: %.2f kg\n", bagAPesT);
+    for(int i = 0; i < numMalAT; i++){
+        printf("bagA[%d],peso: %.2f kg\n", i + 1, bagA[i]);
+    }
+    
+    printf("\n----Bagageiro B----\n");
+    printf("numero total das malas Bag B: %d \n", numMalBT);
+    printf("numero peso total das malas Bag B: %.2f kg\n", bagBPesT);
+    for(int i = 0; i < numMalBT; i++){
+        printf("bagB[%d],peso: %.2f kg\n", i + 1, bagB[i]);
+    }
+    //para conferir deu muito erro antes!!!
+    printf("\nVERIFICACAO: (Peso A + Peso B = %.2f kg)\n", bagAPesT + bagBPesT);
+    
+    return 0;
+}
+
+------------------------------------
+#include <stdio.h>
+#include <stdlib.h> 
+#include <time.h>
+void linha(void){
+ printf("----------------------------------------\n");
+}
+void menu(void){
+    //menu
+    linha();
+    printf(" -> Programa Loteria Mega <- \n");
+    linha();
+}
+int numApostados(){
+    //variaveis
+    int ind;
+    //parte1 inicio
+    printf("->Informe a qnt. de Numero que deseja jogar(max:60): ");
+    scanf("%d",&ind);
+    linha();
+    return ind;
+}
+void cartao(void){
+    //Gerar novos números a cada aposta,estava com problema de numeros no gerador de num ale
+     srand(time(NULL));
+    //variaveis 
+    int ind = numApostados(),acu = 0,acertos = 0,cartaoAposta[6][10],numSort[ind],num[60];
+    //lida qnt numeros eu devo informar
+for(int i = 0; i < ind; i++){
+        printf("->Informe o %d numero: ", i + 1);
+        int temp_num; // usamos uma variável temporária para ler e validar
+  
+        // validação 
+        //normalmente scanf espera inteiro e se o if vai retorna 1,mas aqui espera 0 ou seja que não seja inteiro 
+        if (scanf("%d", &temp_num) != 1) {
+            printf("Erro de entrada! Digite um numero inteiro.\n");
+            while (getchar() != '\n'); // limpando tudo oque não for numero inteiro
+            i--; // volta uma posição para poder escrever denovo o numero 
+            continue; // pula para a próxima iteração 
+        }
+        //  validação Max e Min
+        if(temp_num > 60 || temp_num < 1){ 
+            printf("Erro! O numero deve ser entre 1 e 60.\n");
+            i--; // volta uma posição para poder escrever denovo o numero 
+            continue; // pula para a próxima iteração
+        }
+        //validação de repetição
+        if (i > 0) {
+            int encontrado_repetido = 0;
+            for (int k = 0; k < i; k++) { // compara  (índices de 0 a i-1)
+                if (num[k] == temp_num) {
+                    printf("Erro! O numero %d ja foi digitado. Nao pode repetir.\n", temp_num);
+                    encontrado_repetido = 1;
+                    break; // Sai do loop de verificação
+                }
+            }
+            if (encontrado_repetido) {
+                i--; // Volta uma posição 
+                continue; // Pula para a próxima iteração 
+            }
+        }
+
+        num[i] = temp_num; // AGORA guarda o número no array
+
+        numSort[i] = 1 + ( rand() % 60 ); 
+    }
+
+    linha();
+    //parte2 Cartao da Aposta
+    printf("Cartao da Aposta:\n");
+    linha();
+    //exibicao do cartao
+    for(int l = 0; l < 6; l++){ 
+        for(int c = 0; c < 10; c++){ 
+            //conta os números de 1 a 60.
+            acu++;
+            // preenche a célula da tabela.
+            cartaoAposta[l][c] = acu; 
+
+        
+            int encontrado = 0;
+            for (int k = 0; k < ind; k++) { 
+                if (cartaoAposta[l][c] == num[k]) {
+                    //marca como encontrado!
+                    encontrado = 1;
+                    //para o for e nao o codigo
+                    break;
+                }
+            }
+            if (encontrado) {
+                //se num e colocado no cartao 
+                printf(" %2d ", cartaoAposta[l][c]); 
+            } else {
+                //se nao é colocado --
+                printf(" -- "); 
+            }
+        }
+        printf("\n"); 
+    }
+    linha();
+    //escreva os numeros sorteados
+    for(int i = 0; i < ind; i++){
+        printf("-> informe o %d numero - sorteado: %d \n", i + 1, numSort[i]);
+    }
+    //parte 3 resultado
+    linha();
+    printf("Resultado da aposta \n");
+    linha();
+    printf("\n-> Numero Sorteados:");
+    for(int i = 0; i < ind; i++){
+        printf(" %d -",numSort[i]);
+    }
+    printf("\n-> Numero Apostados:");
+    for(int i = 0; i < ind; i++){
+        printf(" %d -",num[i]);
+    }
+    for(int i = 0; i < ind; i++){
+        if(numSort[i]== num[i]){
+            acertos++;
+        }
+    }
+    printf("\n-> Pontuacao Final: %d Acertos\n",acertos);
+    linha();
+}
+int main() {
+    //variavel decisão
+    int opcao;
+    do{
+    menu();
+    cartao();
+
+    printf("Autor: professor Cristiano \nDev: Erick Quintao\n");
+    printf("-> Digite [1] - nova aposta / [2] - sair: \n");
+    scanf("%d",&opcao);
+    //não menor 0 ou maior 2
+    if(opcao < 0 || opcao > 2){
+       printf("-> Digite [1] - nova aposta / [2] - sair: \n");
+        scanf("%d",&opcao); 
+    }
+    if(opcao == 2){
+        printf("Programa Encerrado!!");
+    }
+    }while(opcao == 1 );
+    return 0;
+}
+
+-----------------------------------
+
+#include <stdio.h>
+#include<stdlib.h>
+// definição da chave de deslocamento
+
+void linha(void){
+ printf("-> --------------------------------------- <-\n");
+}
+int menu(){
+    int opcao;
+    linha();
+    printf("-> Programa Criptografia de Substituição <-\n");
+    linha();
+    printf("->  [ 01 ] - Criptografar uma Palavra <- \n -> [ 02 ] - Descriptografar uma Palavra <- \n -> [ 03 ] - Sair  <-\n");
+    linha();
+    printf("-> Digite Opção: ");
+    scanf("%d",&opcao);
+    return opcao;
+}
+void criptografia(void){
+    // variaveis
+    #define CHAVE1 1
+    char palavra[30];
+    int contador =0,i=0;
+    linha();
+    //header opcao 1
+    printf("-> Programa Criptografia uma Palavra <-\n");
+    linha();
+    printf("-> Informe uma Palavra p/ser Criptografida(max 29): ");
+    //limite de letras
+    scanf("%29s",palavra);
+    printf("-> Palavra Origem: %s\n",palavra);
+    //processamento
+    //separa as letras
+for (int i = 0; palavra[i] != '\0'; i++) {
+        char caractere = palavra[i];
+        // processa letras minusculas
+        if (caractere >= 'a' && caractere <= 'z') {
+            //parte mais importante: 
+            //primeiro: transforma as letras em numeros 0 a 25 ,a = 97.[a-a=0,b-a=1,c-a=2] etc.
+            //segundo: a chave desloca um numero
+            //terceiro: % 26 garante que nunca sai do alfabeto ,exe:z: (25 + 1) % 26 = 26 % 26 = 0
+            palavra[i] = (char)(((caractere - 'a') + CHAVE1) % 26 + 'a');
+            
+        } else if (caractere >= 'A' && caractere <= 'Z') {
+            // Processa letras maiúsculas:
+            palavra[i] = (char)(((caractere - 'A') + CHAVE1) % 26 + 'A');
+            
+        }
+        printf("[%d] - %c -> %c \n",i+1,caractere,palavra[i]);
+    }
+    printf("-> Palavra Destino: %s\n",palavra);
+}
+void descriptografar(void){
+    // variaveis
+    #define CHAVE2 -1
+    char palavra[30];
+    int contador =0,i=0;
+    linha();
+    //header opcao 1
+    printf("-> Programa Descriptografar uma Palavra <-\n");
+    linha();
+    printf("-> Informe uma Palavra p/ser descriptografada(max 29): ");
+    //limite de letras
+    scanf("%29s",palavra);
+    printf("-> Palavra Origem: %s\n",palavra);
+    //processamento
+    //separa as letras
+for (int i = 0; palavra[i] != '\0'; i++) {
+        char caractere = palavra[i];
+        // processa letras minusculas
+        if (caractere >= 'a' && caractere <= 'z') {
+            //parte mais importante: 
+            //primeiro: transforma as letras em numeros 0 a 25 ,a = 97.[a-a=0,b-a=1,c-a=2] etc.
+            //segundo: a chave desloca um numero
+            //terceiro: % 26 garante que nunca sai do alfabeto ,exe:z: (25 + 1) % 26 = 26 % 26 = 0
+            palavra[i] = (char)(((caractere - 'a') + CHAVE2) % 26 + 'a');
+            
+        } else if (caractere >= 'A' && caractere <= 'Z') {
+            // Processa letras maiúsculas:
+            palavra[i] = (char)(((caractere - 'A') + CHAVE2) % 26 + 'A');
+            
+        }
+        printf("[%d] - %c -> %c \n",i+1,caractere,palavra[i]);
+    }
+    printf("-> Palavra Destino: %s\n",palavra);
+}
+void sair(void){
+    linha();
+    printf("-> [ 03 ] - Sair  <-\n");
+    linha();
+    printf("-> Programa Encerrado c/sucesso!!! <-\n");
+    // termina com o programa lib:<stdlib.h>
+    // saida sem erro
+    exit(0);
+}
+int main() {
+    int opcao;
+    do{
+        opcao = menu();
+        switch(opcao){
+            case 1: 
+                criptografia();
+            break;
+            case 2:
+                descriptografar();
+            break;
+            case 3:
+                sair();
+            break;
+            default:
+            printf("opcao invalida!");
+            break;
+        }
+    }while(opcao !=3);
+    return 0;
+}
